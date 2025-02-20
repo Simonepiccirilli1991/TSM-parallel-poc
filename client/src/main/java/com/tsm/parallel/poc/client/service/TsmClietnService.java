@@ -12,10 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -25,6 +27,7 @@ import java.util.concurrent.Future;
 public class TsmClietnService {
 
     private final TsmWebClient tsmWebClient;
+    private final ExecutorService executorService;
 
     // classico
     public TsmClientResponse tsmClientOrchestrator(TsmClientRequest request){
@@ -87,7 +90,10 @@ public class TsmClietnService {
         var iResp = Flux.fromIterable(detailsInfo)
                 // Run calls in parallel on a bounded elastic scheduler
                 .parallel()
-                .runOn(Schedulers.boundedElastic())
+                // qui lascio fare la gestione a spring che sa che il thread dovra essere distrutto
+                //.runOn(Schedulers.boundedElastic())
+                // qui configuro io tramite bean thread vituale su executor service
+                .runOn(Schedulers.fromExecutor(executorService))
                 .flatMap(detail ->
                         tsmWebClient.callReactive(detail)
                 )
