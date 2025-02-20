@@ -18,8 +18,9 @@ public class HandlerController {
     private final HandlerService handlerService;
 
 
-    @PostMapping("detailsinfo")
+    @PostMapping("/detailsinfo")
     public ResponseEntity<HandlerResponse> handlerController(@RequestBody HandlerRequest request){
         return ResponseEntity.ok(handlerService.handler(request));
     }
+
 }

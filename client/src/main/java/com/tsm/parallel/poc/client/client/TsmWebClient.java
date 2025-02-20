@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -20,10 +21,20 @@ public class TsmWebClient {
 
         log.info("Call to handler started for info: {}",detailInfo);
 
-        return webClient.post().uri("http://localhost;9091/api/va/detailsinfo")
+        return webClient.post().uri("http://localhost:9091/api/v1/va/detailsinfo")
                 .bodyValue(detailInfo)
                 .retrieve().bodyToMono(TsmDettails.class)
                 .doOnSuccess(i -> log.info("Call to handler ended successfully"))
                 .block();
+    }
+
+    public Mono<TsmDettails> callReactive(TsmDetailsInfo detailInfo){
+
+        log.info("Call to handler started for info: {}",detailInfo);
+
+        return webClient.post().uri("http://localhost:9091/api/v1/va/detailsinfo")
+                .bodyValue(detailInfo)
+                .retrieve().bodyToMono(TsmDettails.class)
+                .doOnSuccess(i -> log.info("Call to handler ended successfully"));
     }
 }

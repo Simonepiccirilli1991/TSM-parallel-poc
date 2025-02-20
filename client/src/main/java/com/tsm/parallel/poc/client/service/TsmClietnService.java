@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class TsmClietnService {
 
     private final TsmWebClient tsmWebClient;
 
+    // classico
     public Mono<ResponseEntity<TsmClientResponse>> tsmClientOrchestrator(TsmClientRequest request){
 
         log.info("tsmClientOrchestrator service started with raw request: {}",request);
@@ -34,7 +37,19 @@ public class TsmClietnService {
         return Mono.just(ResponseEntity.ok(iResp));
     }
 
+    // reattivo
+    public Mono<ResponseEntity<TsmClientResponse>> tsmClientOrchestratorReactive(TsmClientRequest request){
 
+        log.info("tsmClientOrchestratorReactive service started with raw request: {}",request);
+
+        var iResp = reactiveMultipleTest(request.detailsInfo());
+
+        log.info("tsmClientOrchestratorReactive service ended successfully");
+        return Mono.just(ResponseEntity.ok(iResp));
+    }
+
+
+    // parallelo su virtuale
     private TsmClientResponse clienteMultiple(List<TsmDetailsInfo> detailsInfo){
             log.info("ClienteMultiple case");
             var timeStart = System.currentTimeMillis();
@@ -63,4 +78,28 @@ public class TsmClietnService {
             throw new TsmException("Error on getting future",e.getMessage());
         }
     }
+    // flux reactive
+    private TsmClientResponse reactiveMultipleTest(List<TsmDetailsInfo> detailsInfo){
+        log.info("ReactiveMultipleTest service started");
+
+        var timeStart = System.currentTimeMillis();
+
+        var iResp = Flux.fromIterable(detailsInfo)
+                // Run calls in parallel on a bounded elastic scheduler
+                .parallel()
+                .runOn(Schedulers.boundedElastic())
+                .flatMap(detail ->
+                        tsmWebClient.callReactive(detail)
+                )
+                // Merge parallel results back into a sequential Flux
+                .sequential()
+                // Collect all items into a List and block until complete
+                .collectList()
+                .block();
+
+        var resp = new TsmClientResponse(iResp);
+        log.info("Time for complete reactive cicle is: {}",(System.currentTimeMillis() - timeStart));
+        return resp;
+    }
+
 }

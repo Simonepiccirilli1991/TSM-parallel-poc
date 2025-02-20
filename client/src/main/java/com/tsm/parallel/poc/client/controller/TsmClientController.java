@@ -22,4 +22,9 @@ public class TsmClientController {
     public Mono<ResponseEntity<TsmClientResponse>> details(@RequestBody TsmClientRequest request){
         return tsmClietnService.tsmClientOrchestrator(request);
     }
+
+    @PostMapping("reactive/details")
+    public Mono<ResponseEntity<TsmClientResponse>> detailsReactive(@RequestBody TsmClientRequest request){
+        return tsmClietnService.tsmClientOrchestratorReactive(request);
+    }
 }
