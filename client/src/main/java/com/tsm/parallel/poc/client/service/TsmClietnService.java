@@ -27,14 +27,14 @@ public class TsmClietnService {
     private final TsmWebClient tsmWebClient;
 
     // classico
-    public Mono<ResponseEntity<TsmClientResponse>> tsmClientOrchestrator(TsmClientRequest request){
+    public TsmClientResponse tsmClientOrchestrator(TsmClientRequest request){
 
         log.info("tsmClientOrchestrator service started with raw request: {}",request);
 
         var iResp = clienteMultiple(request.detailsInfo());
 
         log.info("tsmClientOrchestrator service ended successfully");
-        return Mono.just(ResponseEntity.ok(iResp));
+        return iResp;
     }
 
     // reattivo
