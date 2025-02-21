@@ -41,14 +41,14 @@ public class TsmClietnService {
     }
 
     // reattivo
-    public Mono<ResponseEntity<TsmClientResponse>> tsmClientOrchestratorReactive(TsmClientRequest request){
+    public TsmClientResponse tsmClientOrchestratorReactive(TsmClientRequest request){
 
         log.info("tsmClientOrchestratorReactive service started with raw request: {}",request);
 
         var iResp = reactiveMultipleTest(request.detailsInfo());
 
         log.info("tsmClientOrchestratorReactive service ended successfully");
-        return Mono.just(ResponseEntity.ok(iResp));
+        return iResp;
     }
 
 
